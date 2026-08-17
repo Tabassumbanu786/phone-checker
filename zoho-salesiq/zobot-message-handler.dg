@@ -1,30 +1,30 @@
 // SalesIQ Scripts 2.0 — Message Handler
 //
 // Paste this into: SalesIQ > Settings > Bot > Zobot > Add > platform "SalesIQ Scripts"
-// > code builder > "Message Handler" section.
+// > code builder > "Message Handler" section (replace the default template code).
 //
 // The platform provides these variables to this handler automatically:
 //   message   (Map)    - message.get("text") is what the visitor typed
 //   visitor   (Map)    - visitor details
-//   operation (String) - "chat" (new conversation) or "message" (reply)
+//   operation (String) - "chat" when the conversation starts, "message" on each reply
 //   request   (Map)    - request details
 //
-// Flow: this is a single-turn bot. Any visitor message that looks like a
-// phone number (6+ digits) is sent straight to the phone-checker API. Any
-// other message gets the greeting/prompt. No multi-step context is needed.
+// Flow: single-turn bot, no multi-step "context" needed. When the chat starts
+// (operation == "chat") or the visitor's message doesn't look like a phone
+// number yet, show the prompt. Once a message has 6+ digits in it, send it to
+// the phone-checker API and reply with the result.
 
-// >>> Replace with your deployed backend URL (see backend/README section on deployment). <<<
+// >>> Replace with your deployed backend URL (see root README's Deployment section). <<<
 apiUrl = "https://YOUR-DEPLOYED-API.example.com/api/phone/check";
 
-text = message.get("text");
-digitsOnly = text.replaceAll("[^0-9]", "");
-
 response = Map();
-response.put("action", "reply");
+msg = message.get("text");
+digitsOnly = msg.replaceAll("[^0-9]", "");
 
-if(digitsOnly.length() < 6)
+if(operation.equals("chat") || digitsOnly.length() < 6)
 {
-	response.put("replies", {"Hi! Send me a phone number (e.g. 415-555-2671) and I'll check whether it's already on file. Type 'exit' any time to end the chat."});
+	response.put("action", "reply");
+	response.put("replies", {"Hi! Send me a phone number (e.g. 415-555-2671) and I'll check whether it's already on file."});
 	return response;
 }
 
@@ -32,7 +32,7 @@ headers = Map();
 headers.put("Content-Type", "application/json");
 
 body = Map();
-body.put("phoneNumber", text);
+body.put("phoneNumber", msg);
 
 apiResponse = invokeUrl
 [
@@ -60,5 +60,6 @@ else if(statusCode == 429)
 	reply = "Too many checks in a short time — please wait a minute and try again.";
 }
 
+response.put("action", "reply");
 response.put("replies", {reply});
 return response;
