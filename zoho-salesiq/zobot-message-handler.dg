@@ -29,8 +29,12 @@ if(operation.equals("chat") || digitsOnly.length() < 6)
 
 // GET + query param instead of a POST JSON body: Deluge's invokeUrl does not
 // reliably serialize a Map as a raw JSON POST body (a known platform
-// limitation), so this avoids that entirely.
-fullUrl = apiUrl + "?phoneNumber=" + urlEncode(msg);
+// limitation), so this avoids that entirely. digitsOnly is used (rather than
+// msg) so nothing needs URL-encoding — a literal "+" would get misread as a
+// space by the query-string parser, and SalesIQ Scripts doesn't expose
+// urlEncode(). The API's DEFAULT_COUNTRY_CODE fills in the country code this
+// way, same as if the visitor had typed the number without a "+" prefix.
+fullUrl = apiUrl + "?phoneNumber=" + digitsOnly;
 
 apiResponse = invokeUrl
 [
