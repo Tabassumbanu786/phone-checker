@@ -91,6 +91,40 @@ describe('POST /api/phone/check', () => {
   });
 });
 
+describe('GET /api/phone/check (used by the Zoho SalesIQ bot)', () => {
+  beforeEach(() => {
+    queryMock.mockReset();
+  });
+
+  it('returns exists:true for a query-param phone number that is found', async () => {
+    queryMock.mockResolvedValueOnce({ rows: [{ '?column?': 1 }] });
+
+    const res = await request(app).get('/api/phone/check').query({ phoneNumber: '415-555-2671' });
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({
+      exists: true,
+      normalized: '+14155552671',
+      message: 'Phone number already exists',
+    });
+  });
+
+  it('returns exists:false for a query-param phone number that is not found', async () => {
+    queryMock.mockResolvedValueOnce({ rows: [] });
+
+    const res = await request(app).get('/api/phone/check').query({ phoneNumber: '650-555-1212' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.exists).toBe(false);
+    expect(res.body.message).toBe('Good to go');
+  });
+
+  it('rejects a missing query param with 400', async () => {
+    const res = await request(app).get('/api/phone/check');
+    expect(res.status).toBe(400);
+  });
+});
+
 describe('rate limiting', () => {
   beforeEach(() => {
     queryMock.mockReset();
