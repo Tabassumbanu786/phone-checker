@@ -47,13 +47,12 @@ restrictions apply).
   testing directly against a live portal:
   - Deluge's `invokeUrl` does not reliably send a Map as a raw JSON POST
     body, even with `Content-Type: application/json` set.
-  - `urlEncode()` isn't available in the SalesIQ Scripts sandbox, so the
-    query value is built from `digitsOnly` (already stripped to `0-9`) rather
-    than the raw message, which avoids needing to encode a literal `+`.
-  - One side effect: a visitor typing a number with an explicit `+<country
-    code>` loses that `+` before it reaches the API, so it's interpreted
-    using the API's `DEFAULT_COUNTRY_CODE`, same as if they'd typed it
-    without the `+`.
+  - `urlEncode()` isn't available in the SalesIQ Scripts sandbox, and a
+    literal `+` in a query string gets decoded back to a space server-side
+    (standard HTTP behavior). The script works around this by manually
+    swapping a leading `+` for its percent-encoded form (`%2B`) before
+    building the URL — confirmed working for international numbers, e.g.
+    `+917021710954`.
   - Also confirmed live: SalesIQ's `invokeUrl` response is the parsed JSON
     body directly (`apiResponse.get("message")` / `.get("error")`) — not a
     `responseCode`/`responseText` wrapper as some generic Deluge docs
