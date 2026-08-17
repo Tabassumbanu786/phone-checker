@@ -27,18 +27,15 @@ if(operation.equals("chat") || digitsOnly.length() < 6)
 	return response;
 }
 
-headers = Map();
-headers.put("Content-Type", "application/json");
-
-body = Map();
-body.put("phoneNumber", msg);
+// GET + query param instead of a POST JSON body: Deluge's invokeUrl does not
+// reliably serialize a Map as a raw JSON POST body (a known platform
+// limitation), so this avoids that entirely.
+fullUrl = apiUrl + "?phoneNumber=" + urlEncode(msg);
 
 apiResponse = invokeUrl
 [
-	url: apiUrl
-	type: POST
-	parameters: body.toString()
-	headers: headers
+	url: fullUrl
+	type: GET
 ];
 
 statusCode = apiResponse.get("responseCode");
