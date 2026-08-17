@@ -14,8 +14,7 @@
 // number yet, show the prompt. Once a message has 6+ digits in it, send it to
 // the phone-checker API and reply with the result.
 
-// >>> Replace with your deployed backend URL (see root README's Deployment section). <<<
-apiUrl = "https://YOUR-DEPLOYED-API.example.com/api/phone/check";
+apiUrl = "https://phone-checker-qdre.vercel.app/api/phone/check";
 
 response = Map();
 msg = message.get("text");

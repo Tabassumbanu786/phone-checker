@@ -8,6 +8,8 @@ There is intentionally **no way to insert or register a phone number**
 through the app. The one test row is inserted directly in Neon via
 [`db/seed_test_row.sql`](./db/seed_test_row.sql).
 
+**Live demo:** https://phone-checker-brown.vercel.app (API: https://phone-checker-qdre.vercel.app)
+
 ## Stack
 
 - **Frontend:** React + TypeScript (Vite)
@@ -188,5 +190,5 @@ to the deployed backend URL once it's live, then re-save/publish the Zobot.
 - [x] Error handling + rate limiting
 - [x] Automated API tests (20 tests, `backend/npm test`)
 - [x] Credentials in env vars (`.env.example` for both apps)
-- [ ] Deployed demo — see Deployment section above (push to GitHub, then deploy via Render + Vercel as described)
-- [ ] Demonstration video — record a short screen capture of the local or deployed app once deployed
+- [x] Deployed demo — frontend: https://phone-checker-brown.vercel.app, backend: https://phone-checker-qdre.vercel.app
+- [ ] Demonstration video — record a short screen capture of the deployed app
