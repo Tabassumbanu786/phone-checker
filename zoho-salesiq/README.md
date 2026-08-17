@@ -15,9 +15,9 @@ restrictions apply).
    should answer for, and name it (e.g. "Phone Checker").
 3. In the code builder, open the **Message Handler** section and paste in
    [`zobot-message-handler.dg`](./zobot-message-handler.dg).
-4. Replace the `apiUrl` placeholder near the top with your deployed backend's
-   URL, e.g. `https://phone-checker-api.onrender.com/api/phone/check`. Zoho's
-   cloud cannot reach `localhost`, so this must be a public HTTPS URL.
+4. Replace the `apiUrl` near the top with your deployed backend's URL, e.g.
+   `https://phone-checker-qdre.vercel.app/api/phone/check`. Zoho's cloud
+   cannot reach `localhost`, so this must be a public HTTPS URL.
 5. Save, then **Publish** the bot and attach it to the widget/department you
    want it active on.
 6. Open your site's chat widget (or the portal's test console) and send a
@@ -36,13 +36,28 @@ restrictions apply).
 ## Notes
 
 - No visitor input is ever written back to the database — this bot only
-  calls `/api/phone/check`, same as the web page, and that endpoint is
-  read-only.
+  calls `GET /api/phone/check`, and that endpoint is read-only.
 - The handler is intentionally single-turn (no multi-step "context" flow):
   any message that contains 6+ digits is treated as a phone-number check
   attempt. This keeps the script simple and avoids relying on SalesIQ's
   multi-step context/question schema, which isn't needed for a one-field
   form.
+- The bot calls `GET /api/phone/check?phoneNumber=...` (not the POST + JSON
+  body the React page uses). Two platform quirks forced this, confirmed by
+  testing directly against a live portal:
+  - Deluge's `invokeUrl` does not reliably send a Map as a raw JSON POST
+    body, even with `Content-Type: application/json` set.
+  - `urlEncode()` isn't available in the SalesIQ Scripts sandbox, so the
+    query value is built from `digitsOnly` (already stripped to `0-9`) rather
+    than the raw message, which avoids needing to encode a literal `+`.
+  - One side effect: a visitor typing a number with an explicit `+<country
+    code>` loses that `+` before it reaches the API, so it's interpreted
+    using the API's `DEFAULT_COUNTRY_CODE`, same as if they'd typed it
+    without the `+`.
+  - Also confirmed live: SalesIQ's `invokeUrl` response is the parsed JSON
+    body directly (`apiResponse.get("message")` / `.get("error")`) — not a
+    `responseCode`/`responseText` wrapper as some generic Deluge docs
+    describe.
 - If your portal doesn't have SalesIQ Scripts 2.0 enabled, the same flow can
   be built with SalesIQ's no-code **Bot Flow** builder instead: a "Get input"
   step to collect the phone number, an "API call" step pointed at the same
