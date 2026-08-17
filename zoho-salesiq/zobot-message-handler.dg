@@ -42,22 +42,17 @@ apiResponse = invokeUrl
 	type: GET
 ];
 
-statusCode = apiResponse.get("responseCode");
-reply = "Sorry, I couldn't reach the phone lookup service right now. Please try again shortly.";
-
-if(statusCode == 200)
+// SalesIQ Scripts' invokeUrl hands back the parsed JSON body directly (no
+// responseCode/responseText wrapper) — apiResponse IS {exists, normalized,
+// message} on success or {error} on a validation/rate-limit/server error.
+reply = apiResponse.get("error");
+if(reply == null)
 {
-	result = apiResponse.get("responseText").toMap();
-	reply = result.get("message"); // "Phone number already exists" or "Good to go"
+	reply = apiResponse.get("message"); // "Phone number already exists" or "Good to go"
 }
-else if(statusCode == 400)
+if(reply == null)
 {
-	result = apiResponse.get("responseText").toMap();
-	reply = result.get("error"); // e.g. "Phone number is not a valid phone number."
-}
-else if(statusCode == 429)
-{
-	reply = "Too many checks in a short time — please wait a minute and try again.";
+	reply = "Sorry, I couldn't reach the phone lookup service right now. Please try again shortly.";
 }
 
 response.put("action", "reply");
