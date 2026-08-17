@@ -144,26 +144,37 @@ routes, and the health check.
 
 ## Deployment
 
-The Neon database is already live (created for this project). To deploy the
-app itself:
+The Neon database is already live (created for this project). Both apps
+deploy to **Vercel**, as two separate projects from this one GitHub repo
+(one rooted at `backend`, one at `frontend`).
 
-**Backend (Render):**
+**Backend:**
 1. Push this repo to GitHub.
-2. In Render: New > Blueprint, point it at the repo — it will pick up
-   [`backend/render.yaml`](./backend/render.yaml).
-3. Set the `DATABASE_URL` and `CORS_ORIGIN` (your Vercel frontend URL) env
-   vars in the Render dashboard (they're marked `sync: false` so they're not
-   committed).
+2. In Vercel: New Project > import the repo > set **Root Directory** to
+   `backend`.
+3. It deploys as a serverless function ([`backend/api/index.ts`](./backend/api/index.ts)
+   wraps the same Express app; [`backend/vercel.json`](./backend/vercel.json)
+   routes all paths to it).
+4. Add env vars in the Vercel project's Settings > Environment Variables:
+   - `DATABASE_URL` — use Neon's **pooled** connection string (the `-pooler`
+     host) since serverless functions open a fresh connection per
+     invocation.
+   - `CORS_ORIGIN` — your frontend's Vercel URL (can start as `*` and be
+     tightened after the frontend is deployed).
+5. Deploy. Note the resulting URL, e.g. `https://phone-checker-api.vercel.app`.
 
-**Frontend (Vercel):**
-1. Import the repo in Vercel, set the root directory to `frontend`.
-2. Set env var `VITE_API_BASE_URL` to your deployed Render API URL.
+**Frontend:**
+1. In Vercel: New Project > import the same repo again > set **Root
+   Directory** to `frontend`.
+2. Add env var `VITE_API_BASE_URL` = your backend's Vercel URL from above.
 3. Deploy — [`frontend/vercel.json`](./frontend/vercel.json) configures the
    build.
+4. Go back to the backend project's `CORS_ORIGIN` env var and set it to this
+   frontend URL, then redeploy the backend.
 
 **Zoho SalesIQ:** update the `apiUrl` in
 [`zoho-salesiq/zobot-message-handler.dg`](./zoho-salesiq/zobot-message-handler.dg)
-to the deployed Render URL once it's live.
+to the deployed backend URL once it's live, then re-save/publish the Zobot.
 
 ## Deliverables checklist
 
