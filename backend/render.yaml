@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: phone-checker-api
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: CORS_ORIGIN
+        sync: false
+      - key: DEFAULT_COUNTRY_CODE
+        value: US
+      - key: RATE_LIMIT_PER_MINUTE
+        value: "20"

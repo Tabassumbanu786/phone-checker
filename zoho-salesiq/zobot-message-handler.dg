@@ -1,0 +1,64 @@
+// SalesIQ Scripts 2.0 — Message Handler
+//
+// Paste this into: SalesIQ > Settings > Bot > Zobot > Add > platform "SalesIQ Scripts"
+// > code builder > "Message Handler" section.
+//
+// The platform provides these variables to this handler automatically:
+//   message   (Map)    - message.get("text") is what the visitor typed
+//   visitor   (Map)    - visitor details
+//   operation (String) - "chat" (new conversation) or "message" (reply)
+//   request   (Map)    - request details
+//
+// Flow: this is a single-turn bot. Any visitor message that looks like a
+// phone number (6+ digits) is sent straight to the phone-checker API. Any
+// other message gets the greeting/prompt. No multi-step context is needed.
+
+// >>> Replace with your deployed backend URL (see backend/README section on deployment). <<<
+apiUrl = "https://YOUR-DEPLOYED-API.example.com/api/phone/check";
+
+text = message.get("text");
+digitsOnly = text.replaceAll("[^0-9]", "");
+
+response = Map();
+response.put("action", "reply");
+
+if(digitsOnly.length() < 6)
+{
+	response.put("replies", {"Hi! Send me a phone number (e.g. 415-555-2671) and I'll check whether it's already on file. Type 'exit' any time to end the chat."});
+	return response;
+}
+
+headers = Map();
+headers.put("Content-Type", "application/json");
+
+body = Map();
+body.put("phoneNumber", text);
+
+apiResponse = invokeUrl
+[
+	url: apiUrl
+	type: POST
+	parameters: body.toString()
+	headers: headers
+];
+
+statusCode = apiResponse.get("responseCode");
+reply = "Sorry, I couldn't reach the phone lookup service right now. Please try again shortly.";
+
+if(statusCode == 200)
+{
+	result = apiResponse.get("responseText").toMap();
+	reply = result.get("message"); // "Phone number already exists" or "Good to go"
+}
+else if(statusCode == 400)
+{
+	result = apiResponse.get("responseText").toMap();
+	reply = result.get("error"); // e.g. "Phone number is not a valid phone number."
+}
+else if(statusCode == 429)
+{
+	reply = "Too many checks in a short time — please wait a minute and try again.";
+}
+
+response.put("replies", {reply});
+return response;
