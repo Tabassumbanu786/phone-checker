@@ -5,7 +5,7 @@ React web page and a Zoho SalesIQ chatbot, both backed by the same Express
 API and Neon Postgres database.
 
 There is intentionally **no way to insert or register a phone number**
-through the app. The one test row is inserted directly in Neon via
+through the app. Test rows are inserted directly in Neon via
 [`db/seed_test_row.sql`](./db/seed_test_row.sql).
 
 **Live demo:** https://phone-checker-brown.vercel.app (API: https://phone-checker-qdre.vercel.app)
@@ -52,7 +52,7 @@ Prerequisites: Node 18+, a Neon database (or any Postgres).
 
 ```bash
 psql "$DATABASE_URL" -f db/schema.sql
-psql "$DATABASE_URL" -f db/seed_test_row.sql   # inserts +14155552671
+psql "$DATABASE_URL" -f db/seed_test_row.sql   # inserts +14155552671 and +917021710954
 ```
 
 ### 2. Backend
